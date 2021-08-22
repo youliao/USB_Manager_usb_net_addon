@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Containers>
+<Plugin>True</Plugin>
+<PluginURL>https://raw.githubusercontent.com/SimonFair/USB_Manager_usb_net_addon/main/usb_manager_aqc111.plg</PluginURL>
+<PluginAuthor>SimonFair</PluginAuthor>
+<Beta>False</Beta>
+<Category>Other: Drivers:</Category>
+<Name>USB Manager USB NET AQC111 addon</Name>
+<DonateText>If you wanna buy me a coffee.</DonateText>
+<DonateLink>https://paypal.me/SimonNFairweather?locale.x=en_GB</DonateLink>
+<DonateImage>https://www.paypalobjects.com/webstatic/en_US/btn/btn_donate_74x21.png</DonateImage>
+<Description>
+Install Modules for aqc111 based USB Network Adapters.
+
+Modules: AQC111.
+</Description>
+<Support>https://forums.unraid.net/topic/100511-plugin-usb_managerusbip-commands-and-gui/</Support>
+<Date>2021-08-22</Date>
+<Changes>
+Initial Release
+
+Thanks to ich777 for the repo.
+</Changes>
+<IconFA>cogs</IconFA>
+</Containers>

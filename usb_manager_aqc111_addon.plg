@@ -1,0 +1,231 @@
+<?xml version='1.0' standalone='yes'?>
+
+<!DOCTYPE PLUGIN [
+<!ENTITY name      "Usb_manager_aqc111_addon">
+<!ENTITY author    "SimonFair">
+<!ENTITY version   "2021.08.22">
+<!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager_usb_net_addon/main/package">
+<!ENTITY pluginURL "https://raw.githubusercontent.com/SimonFair/USB_Manager_usb_net_addon/main/usb_manager_aqc111_addon.plg">
+<!ENTITY plugin    "/boot/config/plugins/&name;">
+<!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usb_managerusbip-commands-and-gui/">
+<!ENTITY packages	"/boot/config/plugins/&name;/package">
+]>
+
+<PLUGIN name="&name;"
+		author="&author;"
+		version="&version;"
+		pluginURL="&pluginURL;"
+		support="&supportURL;"
+		icon="gear"
+		min="6.9.2">
+
+<CHANGES>
+##&name;
+###&version;
+
+- initial release.
+
+Thanks to ich777 for the repo.
+
+</CHANGES>
+
+<!--
+The 'pre-install' script.
+-->
+<FILE Run="/bin/bash">
+<INLINE>
+# Remove emhttp files so we can re-install.
+rm -rf /usr/local/emhttp/plugins/&name;/* 2>/dev/null
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/&name;/README.md">
+<INLINE>
+**USB Manager USB NET Module for AQC111** 
+
+Install USB NET modules aqc111 to support devices with Controller: AQC111U.
+
+</INLINE>
+</FILE>
+
+<!--
+The 'post-install' script.
+-->
+<FILE Run="/bin/bash">
+<INLINE>
+
+
+download() {
+#Download usb net aqc111
+if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" "${DL_URL}/${PACKAGE}-1.txz" ; then
+  if [ "$(md5sum "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" | cut -d ' ' -f1)" != "$(wget -qO- "${DL_URL}/${PACKAGE}-1.txz.md5" | cut -d ' ' -f1)" ]; then
+    if [ -d &packages;/${KERNEL_V%%-*}/]; then
+      rm -rf &packages;/${KERNEL_V%%-*}/;
+    fi
+    echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR------"
+    echo "--------------------------------CHECKSUM ERROR!---------------------------------"
+    exit 1
+  fi
+  echo "-----------------Sucessfully downloaded usb net aqc111, please wait...!-----------------"
+else
+  echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR------"
+  echo "----------------------------Can't download usb net aqc111 --------------------------------"
+  exit 1
+fi
+}
+
+check() {
+if [ ! -f "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
+  echo "+=============================================================================="
+  echo "| WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING"
+  echo "|"
+  echo "| Don't close this window with the red 'X' in the top right corner until the 'DONE' button is displayed!"
+  echo "|"
+  echo "| WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING"
+  echo "+=============================================================================="
+  echo "---------------------Downloading usb net aqc111, please wait...!------------------------"
+  echo "-----------This could take some time, please don't close this window!----------"
+  download
+elif [ ! -s "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
+  rm -rf &packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz
+  echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR-----"
+  echo "-----Download is empty please contact the developer of this plugin if the------"
+  echo "-------plugin has been already built against the current Kernel version--------"
+  exit 1
+else
+  echo
+  echo "-----------------------------usb net aqc111 found locally!------------------------------"
+fi
+}
+
+install() {
+#Install usb net aqc111 package
+installpkg "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
+depmod -a > /dev/null
+modprobe aqc111
+}
+
+check_usb_net_aqc111_repo() {
+#Check if usb net aqc111 is already downloaded
+
+if [ ! -z "$(modinfo options)" ]; then
+    echo "--------------------------usb net aqc111 already installed...!--------------------------"
+else
+    check
+    echo "-----------------------Installing usb net aqc111, please wait...!-----------------------"
+    install 
+fi
+}
+
+#Wait for Network and timeout after 30 seconds
+HOST="8.8.8.8"
+for i in {1..10}; do
+  ping -c1 $HOST &amp;> /dev/null &amp;&amp; break;
+done
+
+#Define Variables
+
+KERNEL_V="$(uname -r)"
+PACKAGE="usbnet-plugin-${KERNEL_V}"
+DL_URL="https://github.com/SimonFair/USB_Manager_usb_net_addon/releases/download/$KERNEL_V"
+
+#Check for old packages
+rm -rf $(ls -d &plugin;/package/* | grep -v "${KERNEL_V%%-*}")
+
+# Install the plugin bundle.
+# Create plugin directory
+mkdir /boot/config/plugins/&name; 2>/dev/null
+#mkdir /usr/local/emhttp/plugins/&name; 2>/dev/null
+#mkdir -p /tmp/&name;/config 2>/dev/null
+
+if [ ! -d "&packages;/${KERNEL_V%%-*}" ]; then
+  mkdir -p "&packages;/${KERNEL_V%%-*}"
+fi
+
+# Load Package from ich777 for usb net aqc111 modules.
+check_usb_net_aqc111_repo
+
+#Check if Plugin Update Helper is downloaded and up-to-date
+if [ ! -f &plugin;/plugin_update_helper ]; then
+  wget -q -T 5 -O &plugin;/plugin_update_helper "https://raw.githubusercontent.com/ich777/unraid-plugin_update_helper/master/plugin_update_helper"
+else
+  CUR_V="$(grep -E "Plugin-Update-Helper version:" &plugin;/plugin_update_helper | awk '{print $4}')"
+  if [ ! -s /tmp/update-helper ]; then
+    echo "$(wget -T5 -qO- https://raw.githubusercontent.com/ich777/unraid-plugin_update_helper/master/plugin_update_helper | grep -E "Plugin-Update-Helper version:" | awk '{print $4}')" > /tmp/update-helper
+    AVAIL_V="$(cat /tmp/update-helper)"
+  else
+    AVAIL_V="$(cat /tmp/update-helper)"
+  fi
+  if [ ! -z "$AVAIL_V" ]; then
+    COMPARE="$(sort -V &lt;(echo -e "${AVAIL_V}\n$CUR_V") | tail -1)"
+    if [ "$CUR_V" != "$COMPARE" ]; then
+      wget -q -T 5 -O &plugin;/plugin_update_helper "https://raw.githubusercontent.com/ich777/unraid-plugin_update_helper/master/plugin_update_helper"
+    fi
+  fi
+fi
+
+#Check if Plugin Update Helper is installed and up to date
+if [ ! -f /usr/bin/plugin_update_helper ]; then
+  cp &plugin;/plugin_update_helper /usr/bin/plugin_update_helper
+  chmod +x /usr/bin/plugin_update_helper
+else
+  PLUGIN_V="$(grep -E "Plugin-Update-Helper version:" &plugin;/plugin_update_helper | awk '{print $4}')"
+  INST_V="$(grep -E "Plugin-Update-Helper version:" /usr/bin/plugin_update_helper | awk '{print $4}')"
+  COMPARE="$(sort -V &lt;(echo -e "${PLUGIN_V}\n$INST_V") | tail -1)"
+  if [ "$INST_V" != "$COMPARE" ]; then
+    kill $(ps aux | grep -E "inotifywait -q /boot/changes.txt -e move_self,delete_self" | grep -v "grep -E inotifywait" | awk '{print $2}') 2>/dev/null
+    sleep 1
+    cp &plugin;/plugin_update_helper /usr/bin/plugin_update_helper
+    chmod +x /usr/bin/plugin_update_helper
+  fi
+fi
+
+#Start Plugin Update Helper
+if [ -z "$(ps aux | grep -E "inotifywait -q /boot/changes.txt -e move_self,delete_self" | grep -v "grep -E inotifywait" | awk '{print $2}')" ]; then
+  echo "/usr/bin/plugin_update_helper" | at now
+fi
+
+
+echo 
+echo "-----------------------------------------------------------"
+echo " &name; has been installed."
+echo " "
+echo " Copyright 2016-2020, &author;"
+echo " Version: &version;"
+echo ""
+echo "-----------------------------------------------------------"
+echo 
+</INLINE>
+</FILE>
+
+<!--
+The 'remove' script.
+-->
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+
+#Define Variables
+
+KERNEL_V="$(uname -r)"
+PACKAGE="usbnet-plugin-${KERNEL_V}"
+
+# Remove installed packages
+find "&packages;/" -type f -iname "*.txz" -delete
+
+modprobe -rf aqc111
+
+# Remove all plugin files from emhttp.
+removepkg "&packages;/&name;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
+depmod -a > /dev/null
+rm -rf /usr/local/emhttp/plugins/&name;/* 2>/dev/null
+
+echo 
+echo "-----------------------------------------------------------"
+echo " &name; has been uninstalled."
+echo "-----------------------------------------------------------"
+echo 
+
+</INLINE>
+</FILE>
+
+</PLUGIN>
