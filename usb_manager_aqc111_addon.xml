@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Containers>
 <Plugin>True</Plugin>
-<PluginURL>https://raw.githubusercontent.com/SimonFair/USB_Manager_usb_net_addon/main/usb_manager_aqc111.plg</PluginURL>
+<PluginURL>https://raw.githubusercontent.com/SimonFair/USB_Manager_usb_net_addon/main/usb_manager_aqc111_addon.plg</PluginURL>
 <PluginAuthor>SimonFair</PluginAuthor>
 <Beta>False</Beta>
 <Category>Other: Drivers:</Category>
