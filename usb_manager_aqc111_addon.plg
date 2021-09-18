@@ -17,6 +17,7 @@
 		pluginURL="&pluginURL;"
 		support="&supportURL;"
 		icon="gear"
+    max="6.10.0-rc1"
 		min="6.9.2">
 
 <CHANGES>
